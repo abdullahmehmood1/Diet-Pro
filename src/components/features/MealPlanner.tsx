@@ -2,9 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Loader2, Save, Sparkles, Target, Utensils } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function MealPlanner() {
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [output, setOutput] = useState("");
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [formData, setFormData] = useState({
@@ -63,9 +66,24 @@ export default function MealPlanner() {
 
     const handleSave = async () => {
         try {
-            alert("Save functionality to be implemented in phase 2");
+            setSaving(true);
+            const response = await fetch('/api/meal-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: output }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to save meal plan");
+            }
+            alert("Meal plan saved successfully! You can view it in your profile.");
         } catch (error) {
             console.error(error);
+            alert("Error saving meal plan");
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -162,11 +180,12 @@ export default function MealPlanner() {
                     {output && !loading && (
                         <button
                             onClick={handleSave}
-                            className="bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 px-4 py-2 rounded-xl flex items-center space-x-2 transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                            disabled={saving}
+                            className="bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 px-4 py-2 rounded-xl flex items-center space-x-2 transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-50"
                             title="Save Plan"
                         >
-                            <Save className="w-4 h-4" />
-                            <span className="text-sm font-semibold">Save</span>
+                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            <span className="text-sm font-semibold">{saving ? "Saving..." : "Save"}</span>
                         </button>
                     )}
                 </div>
@@ -175,7 +194,11 @@ export default function MealPlanner() {
                     ref={outputRef}
                     className="prose prose-slate prose-headings:text-slate-900 prose-a:text-emerald-600 hover:prose-a:text-emerald-500 max-w-none flex-grow bg-white/50 backdrop-blur-sm rounded-2xl overflow-y-auto max-h-[700px] whitespace-pre-wrap text-[15px] leading-relaxed pr-4 custom-scrollbar"
                 >
-                    {output ? output : (
+                    {output ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {output}
+                        </ReactMarkdown>
+                    ) : (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 min-h-[400px] px-4 text-center">
                             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                                 <Utensils className="w-8 h-8 text-slate-300" />
