@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --font-sans: var(--font-outfit), sans-serif;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #a7f3d0; /* Emerald 200 */
+  color: #064e3b; /* Emerald 900 */
+}
