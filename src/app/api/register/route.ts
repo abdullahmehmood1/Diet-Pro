@@ -42,6 +42,10 @@ export async function POST(req: Request) {
             const err = error as any;
             return NextResponse.json({ user: null, message: err.errors[0].message }, { status: 400 });
         }
-        return NextResponse.json({ user: null, message: "Something went wrong", error }, { status: 500 });
+        return NextResponse.json({ 
+            user: null, 
+            message: error instanceof Error ? error.message : "Something went wrong",
+            details: error
+        }, { status: 500 });
     }
 }
